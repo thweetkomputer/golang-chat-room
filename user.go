@@ -54,8 +54,32 @@ func (u *User) Offline() {
 	u.server.BroadCast(u, "下线")
 }
 
+// SendMsg 给客户端发送消息
+func (u *User) SendMsg(msg string)  {
+	//_, err := u.conn.Write([]byte(msg))
+	//if err != nil {
+	//
+	//	return
+	//}
+	u.C <- msg
+}
+
 // DoMessage 用户处理消息的业务
 func (u *User) DoMessage(msg string) {
+	// 查询在线用户
+	if msg == "who" {
+		u.server.mapLock.Lock()
+
+		for _, user := range u.server.OnlineMap {
+			onlineMsg := "[" + user.Addr + "]" + user.Name + ":" + "在线。"
+			u.SendMsg(onlineMsg)
+		}
+
+		u.server.mapLock.Unlock()
+
+		return
+	}
+
 	u.server.BroadCast(u, msg)
 }
 
