@@ -36,7 +36,7 @@ func (u *User) ListenMessage() {
 
 		_, err := u.conn.Write([]byte(msg + "\n"))
 		if err != nil {
-			fmt.Println("ListenMessage().write err")
+			fmt.Println(u.Name + " ListenMessage().write err")
 			return
 		}
 	}
