@@ -1,1 +1,1 @@
-package golang_IM_System
+package main
