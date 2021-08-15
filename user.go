@@ -56,7 +56,7 @@ func (u *User) Offline() {
 }
 
 // SendMsg 给客户端发送消息
-func (u *User) SendMsg(msg string)  {
+func (u *User) SendMsg(msg string) {
 	//_, err := u.conn.Write([]byte(msg))
 	//if err != nil {
 	//
@@ -99,6 +99,33 @@ func (u *User) DoMessage(msg string) {
 
 		u.Name = newName
 		u.SendMsg("您已更新用户名为 " + u.Name + " 。")
+		return
+	}
+
+	// 私聊 to|张三｜消息内容
+	if len(msg) > 4 && msg[:3] == "to|" {
+		params := strings.Split(msg, "|")
+		// 1 获取用户名
+		remoteName := params[1]
+		if remoteName == "" {
+			u.SendMsg("消息格式不正确")
+			return
+		}
+
+		// 2 得到User对象
+		remoteUser, ok := u.server.OnlineMap[remoteName]
+		if !ok {
+			u.SendMsg("用户不存在")
+			return
+		}
+
+		// 3 获取消息内容，通过User对象发送消息内容
+		content := params[2]
+		if content == "" {
+			u.SendMsg("消息不能为空")
+			return
+		}
+		remoteUser.SendMsg(u.Name + " 对您说： " + content)
 		return
 	}
 
