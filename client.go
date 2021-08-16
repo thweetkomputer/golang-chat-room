@@ -122,18 +122,24 @@ func (c *Client) PrivateChat() {
 			if len(chatMsg) == 0 || err1 != nil {
 				continue
 			}
-			c.SendMsg("to|" + remoteName + "|0" + chatMsg)
+			c.SendMsg("to|" + remoteName + "|" + chatMsg)
 		}
 	}
 }
 
 // UpdateName 修改用户名
 func (c *Client) UpdateName() bool {
-	fmt.Print("请输入新的用户名：")
+	fmt.Print("请输入新的用户名(长度1-18位)：")
 	_, err1 := fmt.Scanln(&c.Name)
-	if err1 != nil {
-		fmt.Println("Scan err:", err1)
-		return false
+	if len(c.Name) > 18 || len(c.Name) < 1 {
+		fmt.Println("新用户名长度不合法")
+	}
+	for err1 != nil || len(c.Name) > 18 || len(c.Name) < 1{
+		_, err1 = fmt.Scanln(&c.Name)
+		//fmt.Println(len(c.Name))
+		if len(c.Name) > 18 || len(c.Name) < 1 {
+			fmt.Println("新用户名长度不合法")
+		}
 	}
 
 	sendMsg := "rename|" + c.Name
