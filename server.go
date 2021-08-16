@@ -91,13 +91,12 @@ func (s *Server) Handler(conn net.Conn) {
 		}
 	}()
 
-	// 当前handler阻塞
 	for {
 		select {
 		case <-isLive:
 			// 重置计时器
 			// 不做任何事情，为了激活select， 应该重置定时器
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Minute * 5):
 			// 已经超时
 			// 讲当前的User强制的关闭
 

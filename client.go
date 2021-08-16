@@ -40,9 +40,9 @@ func NewClient(serverIp string, serverPort int) *Client {
 }
 
 // DealResponse 处理server回应的消息，直接显示到标准输出
-func (client *Client) DealResponse() {
+func (c *Client) DealResponse() {
 	// 一旦client.conn有数据，就直接copy到stdout标准输出上，永久阻塞监听
-	_, err := io.Copy(os.Stdout, client.conn)
+	_, err := io.Copy(os.Stdout, c.conn)
 	if err != nil {
 		fmt.Println("stdout err:", err)
 		return
@@ -50,7 +50,7 @@ func (client *Client) DealResponse() {
 
 }
 
-func (client *Client) menu() bool {
+func (c *Client) menu() bool {
 	var f int
 
 	fmt.Println("1.公聊模式")
@@ -69,48 +69,67 @@ func (client *Client) menu() bool {
 		return false
 	}
 
-	client.flag = f
+	c.flag = f
 	return true
 }
 
-func (client *Client) UpdateName() bool {
+func (c *Client) SendMsg(msg string) bool {
+	_, err := c.conn.Write([]byte(msg + "\n"))
+	if err != nil {
+		fmt.Println("client send msg err:", err)
+		return false
+	}
+	return true
+}
+
+func (c *Client) PublicChat() {
+	// 提示用户输入消息
+	var chatMsg string
+
+	fmt.Println("请输入聊天内容，exit退出")
+	var err error
+	for _, err = fmt.Scanln(&chatMsg); chatMsg != "exit"; _, err = fmt.Scanln(&chatMsg){
+		if len(chatMsg) == 0 || err != nil{
+			continue
+		}
+		c.SendMsg(chatMsg)
+	}
+	fmt.Println("exit PC")
+}
+
+func (c *Client) UpdateName() bool {
 	fmt.Print("请输入新的用户名：")
-	_, err1 := fmt.Scanln(&client.Name)
+	_, err1 := fmt.Scanln(&c.Name)
 	if err1 != nil {
 		fmt.Println("Scan err:", err1)
 		return false
 	}
 
-	sendMsg := "rename|" + client.Name + "\n"
+	sendMsg := "rename|" + c.Name
 
-	_, err := client.conn.Write([]byte(sendMsg))
-	if err != nil {
-		fmt.Println("conn.Write err:", err)
-		return false
-	}
-	return true
+	return c.SendMsg(sendMsg)
 }
 
-func (client *Client) Run() {
-	for client.flag != 0 {
+func (c *Client) Run() {
+	for c.flag != 0 {
 		// 根据不同模式处理不同的业务
-		for !client.menu() {
+		for !c.menu() {
 		}
-		switch client.flag {
+		switch c.flag {
 		case 1:
 			// 公聊模式
 			fmt.Println(">>>>>>进入公聊模式<<<<<<")
+			c.PublicChat()
 		case 2:
 			// 私聊模式
 			fmt.Println(">>>>>>进入私聊模式<<<<<<")
 		case 3:
 			// 更新用户名
-			client.UpdateName()
+			c.UpdateName()
 		}
-		fmt.Println("flag=", client.flag)
+		//fmt.Println("flag=", c.flag)
 	}
 }
-
 
 var serverIp string
 var serverPort int
