@@ -50,7 +50,8 @@ func (c *Client) DealResponse() {
 
 }
 
-func (c *Client) menu() bool {
+// Menu 显示菜单
+func (c *Client) Menu() bool {
 	var f int
 
 	fmt.Println("1.公聊模式")
@@ -72,6 +73,7 @@ func (c *Client) menu() bool {
 	return true
 }
 
+// SendMsg 发送信息向服务端
 func (c *Client) SendMsg(msg string) bool {
 	_, err := c.conn.Write([]byte(msg + "\n"))
 	if err != nil {
@@ -81,21 +83,51 @@ func (c *Client) SendMsg(msg string) bool {
 	return true
 }
 
+// PublicChat 公聊业务
 func (c *Client) PublicChat() {
 	// 提示用户输入消息
 	var chatMsg string
 
 	fmt.Println("请输入聊天内容，exit退出")
 	var err error
-	for _, err = fmt.Scanln(&chatMsg); chatMsg != "exit"; _, err = fmt.Scanln(&chatMsg){
-		if len(chatMsg) == 0 || err != nil{
+	for _, err = fmt.Scanln(&chatMsg); chatMsg != "exit"; _, err = fmt.Scanln(&chatMsg) {
+		if len(chatMsg) == 0 || err != nil {
 			continue
 		}
 		c.SendMsg(chatMsg)
 	}
-	fmt.Println("exit PC")
+	fmt.Println("已退出公聊")
 }
 
+// SelectUsers 查询在线用户
+func (c *Client) SelectUsers() {
+	c.SendMsg("who")
+}
+
+// PrivateChat 私聊业务
+func (c *Client) PrivateChat() {
+	var remoteName, chatMsg string
+
+	c.SelectUsers()
+	fmt.Println("请输入聊天对象（用户名）,exit退出.")
+
+	var err error
+	for _, err = fmt.Scanln(&remoteName); remoteName != "exit"; _, err = fmt.Scanln(&remoteName) {
+		if len(remoteName) == 0 || err != nil {
+			continue
+		}
+		fmt.Println("已经进入与 " + remoteName + " 的私聊 ,exit退出.")
+		var err1 error
+		for _, err1 = fmt.Scanln(&chatMsg); chatMsg != "exit"; _, err1 = fmt.Scanln(&chatMsg) {
+			if len(chatMsg) == 0 || err1 != nil {
+				continue
+			}
+			c.SendMsg("to|" + remoteName + "|0" + chatMsg)
+		}
+	}
+}
+
+// UpdateName 修改用户名
 func (c *Client) UpdateName() bool {
 	fmt.Print("请输入新的用户名：")
 	_, err1 := fmt.Scanln(&c.Name)
@@ -109,10 +141,11 @@ func (c *Client) UpdateName() bool {
 	return c.SendMsg(sendMsg)
 }
 
+// Run 运行客户端业务
 func (c *Client) Run() {
 	for c.flag != 0 {
 		// 根据不同模式处理不同的业务
-		for !c.menu() {
+		for !c.Menu() {
 		}
 		switch c.flag {
 		case 1:
@@ -122,6 +155,7 @@ func (c *Client) Run() {
 		case 2:
 			// 私聊模式
 			fmt.Println(">>>>>>进入私聊模式<<<<<<")
+			c.PrivateChat()
 		case 3:
 			// 更新用户名
 			c.UpdateName()
