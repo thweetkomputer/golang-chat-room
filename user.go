@@ -51,6 +51,9 @@ func (u *User) Offline() {
 	delete(u.server.OnlineMap, u.Name)
 	u.server.mapLock.Unlock()
 
+
+
+
 	// 广播当前用户上线消息
 	u.server.BroadCast(u, "下线")
 }
@@ -134,12 +137,10 @@ func (u *User) DoMessage(msg string) {
 
 // ListenMessage 监听当前User channel 的方法， 一旦有消息，就直接发送给对端客户端
 func (u *User) ListenMessage() {
-	for {
-		msg := <-u.C
-
+	for msg := range u.C{
 		_, err := u.conn.Write([]byte(msg + "\n"))
 		if err != nil {
-			fmt.Println(u.Name + " ListenMessage().write err")
+			fmt.Println(u.Name + "\nmsg:" + msg + " \nListenMessage().write " + err.Error())
 			return
 		}
 	}
