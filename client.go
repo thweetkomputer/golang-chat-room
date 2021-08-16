@@ -59,9 +59,8 @@ func (c *Client) menu() bool {
 	fmt.Println("0.退出")
 
 	_, err := fmt.Scanln(&f)
-	if err != nil {
-		fmt.Println("Scan err:", err)
-		return false
+	for err != nil {
+		_, err = fmt.Scanln(&f)
 	}
 
 	if f < 0 || f > 3 {
